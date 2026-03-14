@@ -1,0 +1,67 @@
+# render.yaml - Manual reference only
+# Deploy each service manually as Web Service / Static Site
+# See README.md for full step-by-step instructions
+
+databases:
+  - name: hrms-db
+    databaseName: hrms_db
+    user: hrms_user
+    plan: free
+
+services:
+  # ─── Backend ────────────────────────────────────────────────────────────────
+  - type: web
+    name: hrms-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hrms-db
+          property: connectionString
+      - key: FRONTEND_URL
+        sync: false
+      - key: FIREBASE_SERVICE_ACCOUNT_JSON
+        sync: false
+      - key: DEV_MODE
+        value: "false"
+      - key: ENVIRONMENT
+        value: "production"
+      - key: SENTRY_DSN
+        sync: false
+
+  # ─── Frontend ───────────────────────────────────────────────────────────────
+  - type: web
+    name: hrms-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    plan: free
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        sync: false
+      - key: VITE_FIREBASE_API_KEY
+        sync: false
+      - key: VITE_FIREBASE_AUTH_DOMAIN
+        sync: false
+      - key: VITE_FIREBASE_PROJECT_ID
+        sync: false
+      - key: VITE_FIREBASE_STORAGE_BUCKET
+        sync: false
+      - key: VITE_FIREBASE_MESSAGING_SENDER_ID
+        sync: false
+      - key: VITE_FIREBASE_APP_ID
+        sync: false
+      - key: VITE_SENTRY_DSN
+        sync: false

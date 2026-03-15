@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { employeeApi } from '../api'
 import EmployeeModal from '../components/EmployeeModal'
+import EmptyState from '../components/EmptyState'
 import { SkeletonRows } from '../components/SkeletonTable'
 import { Plus, Search, Pencil, Trash2, ChevronLeft, ChevronRight,
          Users, ChevronUp, ChevronDown, Eye } from 'lucide-react'
@@ -72,7 +73,7 @@ export default function EmployeesPage() {
   useEffect(() => { setPage(0) }, [department, status, sortBy, sortDir])
 
   useEffect(() => {
-    employeeApi.list({ limit: 200 }).then(r => setAllEmployees(r.data.employees)).catch(() => {})
+    employeeApi.list({ limit: 200 }).then(r => setAllEmployees(r.employees)).catch(() => {})
   }, [])
 
   const fetchEmployees = useCallback(async () => {
@@ -83,9 +84,9 @@ export default function EmployeesPage() {
       if (department) params.department = department
       if (status) params.status = status
       const res = await employeeApi.list(params)
-      setEmployees(res.data.employees)
-      setTotal(res.data.total)
-    } catch { toast.error('Failed to load employees') }
+      setEmployees(res.employees)
+      setTotal(res.total)
+    } catch (err) { toast.error(err.message || 'Failed to load employees') }
     finally { setLoading(false) }
   }, [page, debouncedSearch, department, status, sortBy, sortDir])
 
@@ -107,7 +108,7 @@ export default function EmployeesPage() {
       }
       setModalOpen(false); setEditEmployee(null); fetchEmployees()
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to save employee')
+      toast.error(err.message)
       throw err
     }
   }
@@ -191,12 +192,22 @@ export default function EmployeesPage() {
                 <SkeletonRows cols={7} rows={8} />
               ) : employees.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-16 text-center">
-                    <Users size={36} className="text-ink-700 mx-auto mb-3" />
-                    <p className="text-ink-500 text-sm">No employees found</p>
-                    {(debouncedSearch || department || status) && (
-                      <p className="text-ink-600 text-xs mt-1">Try adjusting your filters</p>
-                    )}
+                  <td colSpan={7}>
+                    <EmptyState 
+                      icon={Users}
+                      title="No employees found"
+                      message={debouncedSearch || department || status 
+                        ? "No employees match your current filters. Try clear filters?" 
+                        : "You haven't added any employees yet."}
+                      actionLabel={debouncedSearch || department || status ? "Clear Filters" : "Add Employee"}
+                      onAction={() => {
+                        if (debouncedSearch || department || status) {
+                          setSearch(''); setDepartment(''); setStatus('')
+                        } else {
+                          setModalOpen(true)
+                        }
+                      }}
+                    />
                   </td>
                 </tr>
               ) : employees.map(emp => (

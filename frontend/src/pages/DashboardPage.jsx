@@ -53,8 +53,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     dashboardApi.stats()
-      .then(r => setStats(r.data))
-      .catch(() => toast.error('Failed to load dashboard'))
+      .then(setStats)
+      .catch((err) => toast.error(err.message || 'Failed to load dashboard'))
       .finally(() => setLoading(false))
   }, [])
 

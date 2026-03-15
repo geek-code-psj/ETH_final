@@ -35,3 +35,6 @@ npm-debug.log*
 
 # Render
 .render/
+
+# DB Backups (docker pg-backup local)
+backups/

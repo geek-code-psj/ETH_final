@@ -3,9 +3,11 @@ import { Outlet, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import {
   LayoutDashboard, Users, CalendarCheck, LogOut, Building2,
-  ChevronRight, Bell, Settings, ClipboardList, BookOpen,
-  Menu, Shield, Building, HeartPulse, CalendarDays
+  ChevronRight, Settings, ClipboardList, BookOpen,
+  Menu, Shield, Building, HeartPulse, CalendarDays,
+  DollarSign
 } from 'lucide-react'
+import NotificationBell from './NotificationBell'
 
 const NAV_GROUPS = [
   {
@@ -25,8 +27,14 @@ const NAV_GROUPS = [
   {
     label: 'Attendance',
     items: [
-      { path: '/attendance',          label: 'Records',  icon: CalendarCheck },
-      { path: '/attendance/calendar', label: 'Calendar', icon: CalendarDays },
+      { path: '/attendance',              label: 'Records',  icon: CalendarCheck },
+      { path: '/attendance/calendar',     label: 'Calendar', icon: CalendarDays },
+    ]
+  },
+  {
+    label: 'Finance',
+    items: [
+      { path: '/payroll', label: 'Payroll', icon: DollarSign },
     ]
   },
   {
@@ -137,14 +145,11 @@ export default function Layout() {
             </button>
             <p className="font-display text-ink-100 text-sm font-semibold">{pageName}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <button className="relative p-2 text-ink-400 hover:text-ink-100 hover:bg-ink-800 rounded-xl transition-colors">
-              <Bell size={16} />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-coral rounded-full" />
-            </button>
+          <div className="flex items-center gap-3">
             <div className="hidden sm:block text-xs text-ink-500 font-mono">
               {new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}
             </div>
+            <NotificationBell />
           </div>
         </header>
 

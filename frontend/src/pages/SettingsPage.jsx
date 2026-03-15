@@ -9,8 +9,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    settingsApi.get().then(r => {
-      const d = r.data
+    settingsApi.get().then(d => {
       setForm({
         company_name: d.company_name || '',
         company_email: d.company_email || '',
@@ -21,7 +20,7 @@ export default function SettingsPage() {
         late_threshold_minutes: d.late_threshold_minutes || 15,
         timezone: d.timezone || 'Asia/Kolkata',
       })
-    }).catch(() => toast.error('Failed to load settings')).finally(() => setLoading(false))
+    }).catch((err) => toast.error(err.message || 'Failed to load settings')).finally(() => setLoading(false))
   }, [])
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
@@ -31,7 +30,7 @@ export default function SettingsPage() {
     try {
       await settingsApi.update(form)
       toast.success('Settings saved')
-    } catch { toast.error('Failed to save settings') }
+    } catch (err) { toast.error(err.message || 'Failed to save settings') }
     finally { setSaving(false) }
   }
 

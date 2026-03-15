@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { leaveApi, employeeApi } from '../api'
+import EmptyState from '../components/EmptyState'
 import { Plus, BookOpen, Check, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -10,7 +11,7 @@ function LeaveModal({ onClose, onSaved }) {
   const [employees, setEmployees] = useState([])
   const [form, setForm] = useState({ employee_id: '', leave_type: 'Sick', start_date: '', end_date: '', reason: '' })
   const [saving, setSaving] = useState(false)
-  useEffect(() => { employeeApi.list({ limit: 200, status: 'Active' }).then(r => setEmployees(r.data.employees)) }, [])
+  useEffect(() => { employeeApi.list({ limit: 200, status: 'Active' }).then(r => setEmployees(r.employees)) }, [])
   const handleSave = async () => {
     if (!form.employee_id || !form.start_date || !form.end_date) { toast.error('Fill required fields'); return }
     setSaving(true)
@@ -18,7 +19,7 @@ function LeaveModal({ onClose, onSaved }) {
       await leaveApi.create({ ...form, employee_id: parseInt(form.employee_id) })
       toast.success('Leave request created')
       onSaved()
-    } catch (err) { toast.error(err.response?.data?.detail || 'Failed') }
+    } catch (err) { toast.error(err.message || 'Failed') }
     finally { setSaving(false) }
   }
   return (
@@ -61,8 +62,8 @@ export default function LeavePage() {
   const fetch = () => {
     setLoading(true)
     leaveApi.list(statusFilter ? { status: statusFilter } : {})
-      .then(r => setRequests(r.data.requests))
-      .catch(() => toast.error('Failed to load leave requests'))
+      .then(r => setRequests(r.requests))
+      .catch((err) => toast.error(err.message || 'Failed to load leave requests'))
       .finally(() => setLoading(false))
   }
   useEffect(() => { fetch() }, [statusFilter])
@@ -72,7 +73,7 @@ export default function LeavePage() {
       await leaveApi.update(id, { status })
       toast.success(`Request ${status}`)
       fetch()
-    } catch { toast.error('Failed to update') }
+    } catch (err) { toast.error(err.message || 'Failed to update') }
   }
 
   return (
@@ -103,7 +104,17 @@ export default function LeavePage() {
             {loading ? (
               <tr><td colSpan={8} className="py-16 text-center"><div className="spinner w-7 h-7 mx-auto" /></td></tr>
             ) : requests.length === 0 ? (
-              <tr><td colSpan={8} className="py-16 text-center"><BookOpen size={32} className="text-ink-700 mx-auto mb-3" /><p className="text-ink-500 text-sm">No leave requests</p></td></tr>
+              <tr><td colSpan={8}>
+                <EmptyState 
+                  icon={BookOpen}
+                  title="No leave requests"
+                  message={statusFilter 
+                    ? `There are no ${statusFilter} leave requests at the moment.` 
+                    : "Wait for employees to submit leave requests."}
+                  actionLabel="New Request"
+                  onAction={() => setModalOpen(true)}
+                />
+              </td></tr>
             ) : requests.map(r => {
               const days = Math.ceil((new Date(r.end_date) - new Date(r.start_date)) / 86400000) + 1
               return (

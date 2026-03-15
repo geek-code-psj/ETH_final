@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { auditApi } from '../api'
+import EmptyState from '../components/EmptyState'
 import { ClipboardList, ChevronLeft, ChevronRight } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -21,8 +22,8 @@ export default function AuditPage() {
   useEffect(() => {
     setLoading(true)
     auditApi.list({ skip: page * LIMIT, limit: LIMIT })
-      .then(r => { setLogs(r.data.logs); setTotal(r.data.total) })
-      .catch(() => toast.error('Failed to load audit log'))
+      .then(r => { setLogs(r.logs); setTotal(r.total) })
+      .catch((err) => toast.error(err.message || 'Failed to load audit log'))
       .finally(() => setLoading(false))
   }, [page])
 
@@ -43,7 +44,13 @@ export default function AuditPage() {
             {loading ? (
               <tr><td colSpan={6} className="py-16 text-center"><div className="spinner w-7 h-7 mx-auto" /></td></tr>
             ) : logs.length === 0 ? (
-              <tr><td colSpan={6} className="py-16 text-center"><ClipboardList size={32} className="text-ink-700 mx-auto mb-3" /><p className="text-ink-500 text-sm">No audit events yet</p></td></tr>
+              <tr><td colSpan={6}>
+                <EmptyState 
+                  icon={ClipboardList}
+                  title="No audit events yet"
+                  message="System activity will appear here as admins perform actions."
+                />
+              </td></tr>
             ) : logs.map(l => (
               <tr key={l.id} className="table-row">
                 <td className="table-cell text-xs font-mono text-ink-400">

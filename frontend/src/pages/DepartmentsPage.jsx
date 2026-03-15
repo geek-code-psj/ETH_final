@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { departmentApi, employeeApi } from '../api'
+import EmptyState from '../components/EmptyState'
 import { Plus, Trash2, Building2, Users, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -39,7 +40,7 @@ function AddDeptModal({ onClose, onSaved, employees }) {
       toast.success('Department created')
       onSaved()
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to create')
+      toast.error(err.message || 'Failed to create')
     } finally { setSaving(false) }
   }
 
@@ -102,9 +103,9 @@ export default function DepartmentsPage() {
         departmentApi.list(),
         employeeApi.list({ limit: 200, status: 'Active' }),
       ])
-      setDepartments(dRes.data.departments)
-      setEmployees(eRes.data.employees)
-    } catch { toast.error('Failed to load departments') }
+      setDepartments(dRes.departments)
+      setEmployees(eRes.employees)
+    } catch (err) { toast.error(err.message || 'Failed to load departments') }
     finally { setLoading(false) }
   }
 
@@ -117,7 +118,7 @@ export default function DepartmentsPage() {
       toast.success('Department deleted')
       setDeleteTarget(null)
       fetchAll()
-    } catch { toast.error('Failed to delete') }
+    } catch (err) { toast.error(err.message || 'Failed to delete') }
   }
 
   return (
@@ -137,11 +138,13 @@ export default function DepartmentsPage() {
           {Array(6).fill(0).map((_, i) => <div key={i} className="card p-5 h-36 skeleton animate-pulse" />)}
         </div>
       ) : departments.length === 0 ? (
-        <div className="card p-16 text-center">
-          <Building2 size={40} className="text-ink-700 mx-auto mb-4" />
-          <p className="text-ink-500 text-sm">No departments yet</p>
-          <p className="text-ink-600 text-xs mt-1">Add your first department to get started</p>
-        </div>
+        <EmptyState 
+          icon={Building2}
+          title="No departments yet"
+          message="Organize your workforce by creating departments."
+          actionLabel="Add Department"
+          onAction={() => setModalOpen(true)}
+        />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {departments.map((dept, i) => {

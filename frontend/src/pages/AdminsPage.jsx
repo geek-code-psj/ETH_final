@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import api from '../api'
+import { adminApi } from '../api'
 import { Shield, Crown, Eye, Users } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../contexts/AuthContext'
@@ -22,9 +22,9 @@ export default function AdminsPage() {
   const fetch = async () => {
     setLoading(true)
     try {
-      const res = await api.get('/api/v1/admins')
-      setAdmins(res.data.admins)
-    } catch { toast.error('Failed to load admins') }
+      const res = await adminApi.list()
+      setAdmins(res.admins)
+    } catch (err) { toast.error(err.message || 'Failed to load admins') }
     finally { setLoading(false) }
   }
 
@@ -32,10 +32,10 @@ export default function AdminsPage() {
 
   const updateRole = async (id, role) => {
     try {
-      await api.put(`/api/v1/admins/${id}/role`, { role })
+      await adminApi.updateRole(id, role)
       toast.success('Role updated')
       fetch()
-    } catch { toast.error('Failed to update role') }
+    } catch (err) { toast.error(err.message || 'Failed to update role') }
   }
 
   return (

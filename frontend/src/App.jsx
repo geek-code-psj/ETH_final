@@ -17,6 +17,8 @@ const AdminsPage             = lazy(() => import('./pages/AdminsPage'))
 const AuditPage              = lazy(() => import('./pages/AuditPage'))
 const SettingsPage           = lazy(() => import('./pages/SettingsPage'))
 const HealthPage             = lazy(() => import('./pages/HealthPage'))
+const PayrollPage            = lazy(() => import('./pages/PayrollPage'))
+const EmployeePortalPage     = lazy(() => import('./pages/EmployeePortalPage'))
 
 function PageLoader() {
   return (
@@ -51,18 +53,20 @@ function AppRoutes() {
     <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
+        <Route path="/portal" element={<EmployeePortalPage />} />
         <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-          <Route index                  element={<DashboardPage />} />
-          <Route path="employees"       element={<EmployeesPage />} />
-          <Route path="employees/:id"   element={<EmployeeProfile />} />
-          <Route path="attendance"      element={<AttendancePage />} />
+          <Route index                      element={<DashboardPage />} />
+          <Route path="employees"           element={<EmployeesPage />} />
+          <Route path="employees/:id"       element={<EmployeeProfile />} />
+          <Route path="attendance"          element={<AttendancePage />} />
           <Route path="attendance/calendar" element={<AttendanceCalendarPage />} />
-          <Route path="leave"           element={<LeavePage />} />
-          <Route path="departments"     element={<DepartmentsPage />} />
-          <Route path="admins"          element={<AdminsPage />} />
-          <Route path="audit"           element={<AuditPage />} />
-          <Route path="settings"        element={<SettingsPage />} />
-          <Route path="health"          element={<HealthPage />} />
+          <Route path="leave"               element={<LeavePage />} />
+          <Route path="departments"         element={<DepartmentsPage />} />
+          <Route path="admins"              element={<AdminsPage />} />
+          <Route path="audit"               element={<AuditPage />} />
+          <Route path="settings"            element={<SettingsPage />} />
+          <Route path="health"              element={<HealthPage />} />
+          <Route path="payroll"             element={<PayrollPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

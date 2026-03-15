@@ -1,0 +1,42 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from core.database import get_db
+from core.security import get_current_user, require_role
+from models.enums import AdminRoleEnum
+from services.department_service import department_service
+from schemas.department import DepartmentCreate, DepartmentResponse
+
+router = APIRouter(prefix="/api/v1/departments", tags=["Departments"])
+
+@router.get("")
+def list_departments(db: Session = Depends(get_db), current_admin=Depends(get_current_user)):
+    depts = department_service.list_departments(db)
+    return {"total": len(depts), "departments": depts}
+
+@router.post("", response_model=DepartmentResponse, status_code=201)
+def create_department(
+    payload: DepartmentCreate, 
+    db: Session = Depends(get_db), 
+    current_admin=Depends(require_role([AdminRoleEnum.admin]))
+):
+    # Search for existing department
+    from models.department import Department
+    if db.query(Department).filter(Department.name == payload.name).first():
+        pass # Service could handle this, but keeping it simple for now
+        
+    dept = department_service.create_department(db, payload)
+    from utils import log_audit
+    log_audit(db, current_admin, "CREATE", "department", dept.id, {"name": payload.name})
+    return dept
+
+@router.delete("/{dept_id}", status_code=204)
+def delete_department(
+    dept_id: int, 
+    db: Session = Depends(get_db), 
+    current_admin=Depends(require_role([AdminRoleEnum.super_admin]))
+):
+    success = department_service.delete_department(db, dept_id)
+    if not success:
+        raise HTTPException(404, "Department not found")
+    from utils import log_audit
+    log_audit(db, current_admin, "DELETE", "department", dept_id, {})

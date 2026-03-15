@@ -24,7 +24,12 @@ export default function AttendanceCalendarPage() {
 
   useEffect(() => {
     employeeApi.list({ limit: 200, status: 'Active' })
-      .then(r => { setEmployees(r.data.employees); if (r.data.employees[0]) setSelectedEmployee(String(r.data.employees[0].id)) })
+      .then(r => { 
+        if (r.employees && r.employees[0]) {
+          setEmployees(r.employees)
+          setSelectedEmployee(String(r.employees[0].id)) 
+        }
+      })
   }, [])
 
   useEffect(() => {
@@ -36,10 +41,10 @@ export default function AttendanceCalendarPage() {
     attendanceApi.list({ employee_id: selectedEmployee, date_from: firstDay, date_to: lastDayStr, limit: 100 })
       .then(r => {
         const map = {}
-        r.data.records.forEach(rec => { map[rec.date] = rec })
+        r.records.forEach(rec => { map[rec.date] = rec })
         setRecords(map)
       })
-      .catch(() => toast.error('Failed to load calendar'))
+      .catch((err) => toast.error(err.message || 'Failed to load calendar'))
       .finally(() => setLoading(false))
   }, [selectedEmployee, month, year])
 

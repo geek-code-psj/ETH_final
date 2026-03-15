@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { attendanceApi } from '../api'
 import AttendanceModal from '../components/AttendanceModal'
 import BulkAttendanceModal from '../components/BulkAttendanceModal'
+import EmptyState from '../components/EmptyState'
 import { SkeletonRows } from '../components/SkeletonTable'
 import { Plus, Users, Pencil, Trash2, ChevronLeft, ChevronRight,
          CalendarCheck, Download, BarChart2 } from 'lucide-react'
@@ -36,8 +37,8 @@ function MonthlySummaryModal({ onClose }) {
   const fetch = () => {
     setLoading(true)
     attendanceApi.monthlySummary(month, year)
-      .then(r => setData(r.data))
-      .catch(() => toast.error('Failed to load summary'))
+      .then(setData)
+      .catch((err) => toast.error(err.message || 'Failed to load summary'))
       .finally(() => setLoading(false))
   }
 
@@ -119,9 +120,9 @@ export default function AttendancePage() {
       if (dateTo) params.date_to = dateTo
       if (statusFilter) params.status = statusFilter
       const res = await attendanceApi.list(params)
-      setRecords(res.data.records)
-      setTotal(res.data.total)
-    } catch { toast.error('Failed to load attendance') }
+      setRecords(res.records)
+      setTotal(res.total)
+    } catch (err) { toast.error(err.message || 'Failed to load attendance') }
     finally { setLoading(false) }
   }, [page, dateFrom, dateTo, statusFilter])
 
@@ -136,7 +137,7 @@ export default function AttendancePage() {
         await attendanceApi.create(data); toast.success('Attendance logged')
       }
       setModalOpen(false); setEditRecord(null); fetchRecords()
-    } catch (err) { toast.error(err.response?.data?.detail || 'Failed to save'); throw err }
+    } catch (err) { toast.error(err.message || 'Failed to save'); throw err }
   }
 
   const handleDelete = async () => {
@@ -152,7 +153,7 @@ export default function AttendancePage() {
       if (dateTo) params.date_to = dateTo
       const res = await attendanceApi.export(params)
       const ext = fmt === 'excel' ? 'xlsx' : 'csv'
-      const url = window.URL.createObjectURL(new Blob([res.data]))
+      const url = window.URL.createObjectURL(new Blob([res])) // response is actually res.data from axios, which is the blob
       const a = document.createElement('a')
       a.href = url
       a.download = `attendance_${dateFrom}_${dateTo}.${ext}`
@@ -161,8 +162,8 @@ export default function AttendancePage() {
       a.remove()
       window.URL.revokeObjectURL(url)
       toast.success(`Downloaded as ${fmt.toUpperCase()}`)
-    } catch {
-      toast.error('Export failed')
+    } catch (err) {
+      toast.error(err.message || 'Export failed')
     }
   }
 
@@ -215,10 +216,14 @@ export default function AttendancePage() {
               {loading ? (
                 <SkeletonRows cols={9} rows={8} />
               ) : records.length === 0 ? (
-                <tr><td colSpan={9} className="py-16 text-center">
-                  <CalendarCheck size={36} className="text-ink-700 mx-auto mb-3" />
-                  <p className="text-ink-500 text-sm">No records found</p>
-                  <p className="text-ink-600 text-xs mt-1">Try adjusting the date range or use Bulk Mark</p>
+                <tr><td colSpan={9}>
+                  <EmptyState 
+                    icon={CalendarCheck}
+                    title="No records found"
+                    message="You haven't logged any attendance for this period yet."
+                    actionLabel="Log Attendance"
+                    onAction={() => setModalOpen(true)}
+                  />
                 </td></tr>
               ) : records.map(r => (
                 <tr key={r.id} className="table-row">

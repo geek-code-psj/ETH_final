@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import api from '../api'
+import { systemApi } from '../api'
 import { CheckCircle, XCircle, Clock, RefreshCw, Server, Database, Shield } from 'lucide-react'
 
 function StatusBadge({ ok }) {
@@ -18,9 +18,9 @@ export default function HealthPage() {
     setLoading(true)
     const start = Date.now()
     try {
-      const res = await api.get('/health')
+      const res = await systemApi.health()
       setResponseTime(Date.now() - start)
-      setHealth({ ok: true, ...res.data })
+      setHealth({ ok: true, ...res })
     } catch {
       setHealth({ ok: false })
       setResponseTime(Date.now() - start)

@@ -42,10 +42,10 @@ export default function EmployeeProfile() {
     Promise.all([
       employeeApi.get(id),
       attendanceApi.list({ employee_id: id, limit: 30 })
-    ]).then(([empRes, attRes]) => {
-      setEmployee(empRes.data)
-      setAttendance(attRes.data.records)
-    }).catch(() => toast.error('Failed to load profile'))
+    ]).then(([emp, att]) => {
+      setEmployee(emp)
+      setAttendance(att.records)
+    }).catch((err) => toast.error(err.message || 'Failed to load profile'))
     .finally(() => setLoading(false))
   }, [id])
 
@@ -53,11 +53,11 @@ export default function EmployeeProfile() {
     try {
       await employeeApi.update(id, data)
       const res = await employeeApi.get(id)
-      setEmployee(res.data)
+      setEmployee(res)
       setEditOpen(false)
       toast.success('Employee updated')
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to update')
+      toast.error(err.message)
       throw err
     }
   }

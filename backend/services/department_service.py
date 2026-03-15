@@ -32,6 +32,17 @@ class DepartmentService:
         return db_obj
 
     @staticmethod
+    def update_department(db: Session, dept_id: int, obj_in: DepartmentCreate) -> bool:
+        db_obj = db.query(Department).filter(Department.id == dept_id).first()
+        if not db_obj:
+            return None
+        for k, v in obj_in.model_dump(exclude_unset=True).items():
+            setattr(db_obj, k, v)
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj
+
+    @staticmethod
     def delete_department(db: Session, dept_id: int) -> bool:
         db_obj = db.query(Department).filter(Department.id == dept_id).first()
         if not db_obj:

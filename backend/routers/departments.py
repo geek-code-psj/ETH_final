@@ -40,3 +40,28 @@ def delete_department(
         raise HTTPException(404, "Department not found")
     from utils import log_audit
     log_audit(db, current_admin, "DELETE", "department", dept_id, {})
+
+@router.put("/{dept_id}", response_model=DepartmentResponse)
+def update_department(
+    dept_id: int,
+    payload: DepartmentCreate,
+    db: Session = Depends(get_db),
+    current_admin=Depends(require_role([AdminRoleEnum.admin]))
+):
+    dept = department_service.update_department(db, dept_id, payload)
+    if not dept:
+        raise HTTPException(404, "Department not found")
+    from utils import log_audit
+    log_audit(db, current_admin, "UPDATE", "department", dept_id, {"name": payload.name})
+    # Return with employee_count
+    from sqlalchemy import func
+    from models.employee import Employee
+    count = db.query(func.count(Employee.id)).filter(Employee.department == dept.name).scalar()
+    return DepartmentResponse(
+        id=dept.id, name=dept.name, code=dept.code,
+        head_employee_id=dept.head_employee_id,
+        description=dept.description,
+        is_active=dept.is_active,
+        employee_count=count
+    )
+

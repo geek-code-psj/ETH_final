@@ -75,9 +75,10 @@ export const leaveApi = {
 }
 
 export const departmentApi = {
-  list: () => api.get(`${BASE}/departments`),
-  create: (d) => api.post(`${BASE}/departments`, d),
-  delete: (id) => api.delete(`${BASE}/departments/${id}`),
+  list:   ()        => api.get(`${BASE}/departments`),
+  create: (d)       => api.post(`${BASE}/departments`, d),
+  update: (id, d)   => api.put(`${BASE}/departments/${id}`, d),
+  delete: (id)      => api.delete(`${BASE}/departments/${id}`),
 }
 
 export const settingsApi = {

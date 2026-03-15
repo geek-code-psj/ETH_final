@@ -53,8 +53,8 @@ class EmployeeBase(BaseModel):
     @field_validator('avatar_url')
     @classmethod
     def validate_avatar_url(cls, v):
-        if v and not re.match(r'^https?://', v):
-            raise ValueError('Avatar URL must start with http:// or https://')
+        if v and not (re.match(r'^https?://', v) or v.startswith('data:image/')):
+            raise ValueError('Avatar URL must be an HTTP URL or a Base64 data URL')
         return v
 
 

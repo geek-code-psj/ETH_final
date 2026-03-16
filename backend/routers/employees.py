@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/v1/employees", tags=["Employees"])
 @router.get("", response_model=EmployeeListResponse)
 def list_employees(
     skip: int = Query(0, ge=0), 
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(20, ge=1, le=1000),
     search: Optional[str] = None, 
     department: Optional[str] = None,
     status: Optional[str] = None,

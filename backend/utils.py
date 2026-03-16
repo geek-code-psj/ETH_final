@@ -25,7 +25,7 @@ def log_audit(db: Session, admin, action: str, resource: str, resource_id: str, 
         log = AuditLog(
             admin_id=admin.id if admin else None,
             admin_email=admin.email if admin else "system",
-            action=action,
+            action=action.upper(),
             resource=resource,
             resource_id=str(resource_id),
             details=json.dumps(details) if details else None,
@@ -40,6 +40,7 @@ def log_audit(db: Session, admin, action: str, resource: str, resource_id: str, 
             by=admin.email if admin else "system"
         )
     except Exception as e:
+        db.rollback()
         log_db_error("log_audit", e, resource=resource, resource_id=str(resource_id))
 
 

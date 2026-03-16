@@ -28,7 +28,7 @@ def log_audit(db: Session, admin, action: str, resource: str, resource_id: str, 
             action=action.upper(),
             resource=resource,
             resource_id=str(resource_id),
-            details=json.dumps(details) if details else None,
+            details=json.dumps(details, default=str) if details else None,
         )
         db.add(log)
         db.commit()

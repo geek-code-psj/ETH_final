@@ -23,7 +23,7 @@ export default function BulkAttendanceModal({ onClose, onSaved }) {
 
   useEffect(() => {
     employeeApi.list({ limit: 200, status: 'Active' }).then(res => {
-      const emps = res.data.employees
+      const emps = res.employees || []
       setEmployees(emps)
       const initial = {}
       emps.forEach(e => { initial[e.id] = 'Present' })

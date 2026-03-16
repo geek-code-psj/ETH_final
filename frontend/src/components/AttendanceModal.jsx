@@ -20,7 +20,7 @@ export default function AttendanceModal({ record, onClose, onSave }) {
 
   useEffect(() => {
     employeeApi.list({ limit: 200, status: 'Active' }).then(res => {
-      setEmployees(res.data.employees)
+      setEmployees(res.employees)
     })
   }, [])
 

@@ -21,7 +21,7 @@ export function AuthProvider({ children }) {
             email: firebaseUser.email,
             name: firebaseUser.displayName,
           })
-          setAdminData(res.data)
+          setAdminData(res)
         } catch (err) {
           console.error('Admin registration error:', err)
         }

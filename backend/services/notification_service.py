@@ -10,7 +10,9 @@ SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 FROM_EMAIL = os.getenv("NOTIFICATION_FROM_EMAIL", "noreply@hrms.com")
 
 
-def _send_email(to: str, subject: str, body: str):
+import threading
+
+def _send_email_task(to: str, subject: str, body: str):
     """Attempt to send email via SendGrid if API key is configured."""
     if not SENDGRID_API_KEY:
         return
@@ -24,9 +26,19 @@ def _send_email(to: str, subject: str, body: str):
             html_content=body
         )
         sg = SendGridAPIClient(SENDGRID_API_KEY)
+        # Set a 5-second timeout on the underlying urllib3 client
+        sg.client.timeout = 5
         sg.send(message)
     except Exception as e:
         print(f"Email send failed: {e}")
+
+def _send_email(to: str, subject: str, body: str):
+    thread = threading.Thread(
+        target=_send_email_task,
+        args=(to, subject, body),
+        daemon=True
+    )
+    thread.start()
 
 
 class NotificationService:

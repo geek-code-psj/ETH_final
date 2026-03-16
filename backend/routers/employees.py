@@ -73,7 +73,7 @@ def update_employee(
 def delete_employee(
     employee_id: int, 
     db: Session = Depends(get_db), 
-    current_admin=Depends(require_role([AdminRoleEnum.super_admin]))
+    current_admin=Depends(require_role([AdminRoleEnum.super_admin, AdminRoleEnum.admin, AdminRoleEnum.hr_manager]))
 ):
     success = employee_service.delete_employee(db, employee_id)
     if not success:

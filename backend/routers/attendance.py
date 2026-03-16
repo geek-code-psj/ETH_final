@@ -17,7 +17,7 @@ router = APIRouter(prefix="/api/v1/attendance", tags=["Attendance"])
 @router.get("", response_model=AttendanceListResponse)
 def list_attendance(
     skip: int = Query(0, ge=0), 
-    limit: int = Query(50, ge=1, le=200),
+    limit: int = Query(50, ge=1, le=1000),
     employee_id: Optional[int] = None, 
     date_from: Optional[date] = None,
     date_to: Optional[date] = None,

@@ -55,14 +55,16 @@ def log_event(level: str, event: str, **kwargs):
     fn(event, **kwargs)
 
 
-def log_login_attempt(email: str, success: bool, ip: str = None, user_type: str = "admin"):
+from typing import Optional
+
+def log_login_attempt(email: str, success: bool, ip: Optional[str] = None, user_type: str = "admin"):
     if success:
         logger.info("login_success", email=email, user_type=user_type, ip=ip)
     else:
         logger.warning("login_failed", email=email, user_type=user_type, ip=ip)
 
 
-def log_employee_action(action: str, employee_id: int, by: str, details: dict = None):
+def log_employee_action(action: str, employee_id: int, by: str, details: Optional[dict] = None):
     """action = created | updated | deleted | activated | deactivated"""
     logger.info(
         f"employee_{action}",
@@ -82,7 +84,7 @@ def log_leave_action(action: str, leave_id: int, employee_id: int, by: str):
     )
 
 
-def log_payroll_action(action: str, month: int, year: int, by: str, count: int = None):
+def log_payroll_action(action: str, month: int, year: int, by: str, count: Optional[int] = None):
     logger.info(
         f"payroll_{action}",
         month=month, year=year,
@@ -103,5 +105,5 @@ def log_db_error(operation: str, error: Exception, **kwargs):
 
 def log_security_event(event: str, severity: str = "WARNING", **kwargs):
     """For auth failures, rate limit hits, permission denials."""
-    fn = getattr(logger, severity.lower(), logger.warning)
+    fn = getattr(logger, severity.lower(), getattr(logger, "warning"))
     fn(f"security_{event}", **kwargs)

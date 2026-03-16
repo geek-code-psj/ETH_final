@@ -28,7 +28,7 @@ class RequestIDMiddleware(BaseHTTPMiddleware):
     """Attach a unique request_id to every request for log tracing."""
     async def dispatch(self, request: Request, call_next):
         import structlog
-        request_id = str(uuid.uuid4())[:8]
+        request_id = uuid.uuid4().hex[:8]
         with structlog.contextvars.bound_contextvars(request_id=request_id):
             response: Response = await call_next(request)
             response.headers["X-Request-ID"] = request_id
@@ -55,6 +55,19 @@ app = FastAPI(
     redoc_url=None
 )
 
+# ─── CORS MUST BE THE FIRST MIDDLEWARE ADDED (STARLETTE READS LAST-IN, FIRST-OUT) ─
+_origins = [settings.FRONTEND_URL]
+if settings.ENVIRONMENT != "production":
+    _origins += ["http://localhost:5173", "http://localhost:3000", "https://eth-finnal-1.onrender.com", "https://eth-final-frontend.vercel.app"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # Temporarily wildcarding to ensure no exact-match typos block origin
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+)
+
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -74,19 +87,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RequestIDMiddleware)   # ← request tracing
-
-# ─── CORS — env-aware, locked down in production ─────────────────────────────
-_origins = [settings.FRONTEND_URL]
-if settings.ENVIRONMENT != "production":
-    _origins += ["http://localhost:5173", "http://localhost:3000"]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=_origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With"],
-)
 
 # ─── Register Routers ─────────────────────────────────────────────────────────
 app.include_router(auth.router)

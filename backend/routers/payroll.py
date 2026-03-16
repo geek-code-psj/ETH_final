@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import Optional
@@ -74,6 +74,7 @@ def get_payslip(
 def update_payroll_status(
     record_id: int,
     payload: dict,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_admin=Depends(require_role([AdminRoleEnum.super_admin, AdminRoleEnum.admin]))
 ):
@@ -88,7 +89,8 @@ def update_payroll_status(
         # notify employee
         emp = record.employee
         if emp and emp.email:
-            send_email_notification(
+            background_tasks.add_task(
+                send_email_notification,
                 to_email=emp.email,
                 subject=f"Payroll Processed: {record.month}/{record.year}",
                 body=f"Hello {emp.first_name},\nYour salary for {record.month}/{record.year} has been processed and paid out."

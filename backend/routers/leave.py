@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from datetime import datetime
 from typing import Optional
@@ -31,6 +31,7 @@ def list_leave_requests(
 @router.post("", response_model=LeaveRequestResponse, status_code=201)
 def create_leave_request(
     payload: LeaveRequestCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_admin=Depends(require_role([AdminRoleEnum.admin, AdminRoleEnum.hr_manager]))
 ):
@@ -43,7 +44,8 @@ def create_leave_request(
     log_audit(db, current_admin, "CREATE", "leave_request", request.id, {"employee_id": payload.employee_id})
     
     if emp.email:
-        send_email_notification(
+        background_tasks.add_task(
+            send_email_notification,
             to_email=emp.email,
             subject="Leave Request Created",
             body=f"Hello {emp.first_name},\nYour leave request for {payload.start_date} to {payload.end_date} has been submitted successfully."
@@ -58,6 +60,7 @@ def create_leave_request(
 def update_leave_status(
     request_id: int,
     payload: LeaveRequestUpdate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_admin=Depends(require_role([AdminRoleEnum.admin, AdminRoleEnum.hr_manager]))
 ):
@@ -70,7 +73,8 @@ def update_leave_status(
     log_audit(db, current_admin, "UPDATE", "leave_request", request_id, {"status": payload.status})
     
     if emp and emp.email:
-        send_email_notification(
+        background_tasks.add_task(
+            send_email_notification,
             to_email=emp.email,
             subject=f"Leave Request {payload.status.capitalize()}",
             body=f"Hello {emp.first_name},\nYour leave request has been marked as {payload.status}."

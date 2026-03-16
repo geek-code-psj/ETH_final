@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { employeeApi } from '../api'
 import EmployeeModal from '../components/EmployeeModal'
 import EmptyState from '../components/EmptyState'
@@ -213,7 +213,7 @@ export default function EmployeesPage() {
               ) : employees.map(emp => (
                 <tr key={emp.id} className="table-row">
                   <td className="table-cell">
-                    <div className="flex items-center gap-3">
+                    <Link to={`/employees/${emp.id}`} className="flex items-center gap-3 group/link hover:opacity-80 transition-opacity">
                       {emp.avatar_url ? (
                         <img src={emp.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-ink-700" />
                       ) : (
@@ -222,10 +222,10 @@ export default function EmployeesPage() {
                         </div>
                       )}
                       <div>
-                        <p className="text-ink-100 font-medium text-sm">{emp.first_name} {emp.last_name}</p>
+                        <p className="text-ink-100 font-medium text-sm group-hover/link:text-accent-light transition-colors">{emp.first_name} {emp.last_name}</p>
                         <p className="text-ink-500 text-xs font-mono">{emp.employee_id}</p>
                       </div>
-                    </div>
+                    </Link>
                   </td>
                   <td className="table-cell text-ink-300 text-sm">{emp.department}</td>
                   <td className="table-cell text-ink-300 text-sm">{emp.position}</td>

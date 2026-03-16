@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { attendanceApi } from '../api'
 import AttendanceModal from '../components/AttendanceModal'
 import BulkAttendanceModal from '../components/BulkAttendanceModal'
@@ -248,6 +249,24 @@ export default function AttendancePage() {
     }
   }
 
+  const handleQuickAction = async (record, newStatus) => {
+    try {
+      const payload = {
+        employee_id: record.employee_id,
+        date: record.date.split('T')[0],
+        status: newStatus,
+        check_in: record.check_in,
+        check_out: record.check_out,
+        notes: record.notes
+      }
+      await attendanceApi.update(record.id, payload)
+      toast.success(`Marked as ${newStatus}`)
+      fetchRecords()
+    } catch (err) {
+      toast.error(err?.message || `Failed to mark ${newStatus}`)
+    }
+  }
+
   const handleExport = async (fmt) => {
     const setExp = fmt === 'csv' ? setExportingCsv : setExportingXls
     setExp(true)
@@ -395,15 +414,15 @@ export default function AttendancePage() {
               ) : records.map(r => (
                 <tr key={r.id} className="table-row group">
                   <td className="table-cell">
-                    <div className="flex items-center gap-2">
+                    <Link to={`/employees/${r.employee_id}`} className="flex items-center gap-2 group/link hover:opacity-80 transition-opacity">
                        <div className="w-7 h-7 rounded-md bg-ink-800 border border-ink-700 flex items-center justify-center text-xs font-bold text-ink-300">
                          {r.employee_name?.[0] || '?'}
                        </div>
                        <div>
-                         <p className="text-ink-200 text-sm font-medium">{r.employee_name || `#${r.employee_id}`}</p>
+                         <p className="text-ink-200 text-sm font-medium group-hover/link:text-accent-light transition-colors">{r.employee_name || `#${r.employee_id}`}</p>
                          {r.employee_department && <p className="text-ink-500 text-[10px]">{r.employee_department}</p>}
                        </div>
-                    </div>
+                    </Link>
                   </td>
                   <td className="table-cell text-xs font-mono text-ink-300 whitespace-nowrap">{fmtDate(r.date)}</td>
                   <td className="table-cell text-xs font-mono text-ink-300 whitespace-nowrap">{fmtTime(r.check_in)}</td>
@@ -417,7 +436,24 @@ export default function AttendancePage() {
                   <td className="table-cell"><span className={STATUS_BADGE[r.status] || 'badge'}>{r.status}</span></td>
                   <td className="table-cell text-xs text-ink-500 max-w-[150px] truncate" title={r.notes}>{r.notes || '—'}</td>
                   <td className="table-cell">
-                    <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {/* Quick Actions */}
+                      {r.status !== 'Present' && (
+                        <button onClick={() => handleQuickAction(r, 'Present')} title="Mark Present"
+                                className="px-2 py-1 text-[10px] font-semibold tracking-wider uppercase text-jade bg-jade/10 hover:bg-jade/20 rounded border border-jade/20 transition-colors">
+                          Present
+                        </button>
+                      )}
+                      {r.status !== 'Absent' && (
+                        <button onClick={() => handleQuickAction(r, 'Absent')} title="Mark Absent"
+                                className="px-2 py-1 text-[10px] font-semibold tracking-wider uppercase text-coral bg-coral/10 hover:bg-coral/20 rounded border border-coral/20 transition-colors">
+                          Absent
+                        </button>
+                      )}
+                      
+                      <div className="w-px h-4 bg-ink-700 mx-1" />
+                      
+                      {/* Standard Actions */}
                       <button onClick={() => { setEditRecord(r); setModalOpen(true) }} title="Edit"
                               className="p-1.5 text-ink-500 hover:text-accent-light hover:bg-accent/10 rounded-lg transition-colors"><Pencil size={13} /></button>
                       <button onClick={() => setDeleteTarget(r)} title="Delete"

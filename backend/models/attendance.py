@@ -1,8 +1,9 @@
-from sqlalchemy import Column, Integer, ForeignKey, Date, DateTime, Enum, Text, Numeric, Boolean, Index
+from sqlalchemy import Column, Integer, ForeignKey, Date, DateTime, Enum, Text, Numeric, Boolean, Index, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from core.database import Base
 from models.enums import AttendanceStatusEnum
+
 
 class Attendance(Base):
     __tablename__ = "attendance"
@@ -23,5 +24,7 @@ class Attendance(Base):
     employee = relationship("Employee", back_populates="attendance_records")
 
     __table_args__ = (
+        # Unique constraint: one attendance record per employee per day
+        UniqueConstraint("employee_id", "date", name="uq_attendance_emp_date"),
         Index("ix_attendance_emp_date", "employee_id", "date"),
     )

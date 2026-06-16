@@ -10,6 +10,11 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [adminData, setAdminData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [needsApproval, setNeedsApproval] = useState(false)
+
+  const isSuperAdmin = adminData?.role === 'super_admin'
+  const isAdmin = adminData?.role === 'admin' || adminData?.role === 'super_admin' || adminData?.role === 'hr_manager'
+  const isActive = adminData?.is_active !== false
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -22,11 +27,17 @@ export function AuthProvider({ children }) {
             name: firebaseUser.displayName,
           })
           setAdminData(res)
+          // Check if new admin needs approval
+          if (res.role === 'viewer' && !res.is_active) {
+            setNeedsApproval(true)
+          }
         } catch (err) {
           console.error('Admin registration error:', err)
+          setNeedsApproval(true)
         }
       } else {
         setAdminData(null)
+        setNeedsApproval(false)
       }
       setLoading(false)
     })
@@ -48,8 +59,30 @@ export function AuthProvider({ children }) {
     toast.success('Signed out successfully')
   }
 
+  const refreshAdminData = async () => {
+    if (user) {
+      try {
+        const res = await authApi.me()
+        setAdminData(res)
+      } catch (err) {
+        console.error('Failed to refresh admin data:', err)
+      }
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, adminData, loading, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{
+      user,
+      adminData,
+      loading,
+      loginWithGoogle,
+      logout,
+      isSuperAdmin,
+      isAdmin,
+      isActive,
+      needsApproval,
+      refreshAdminData
+    }}>
       {children}
     </AuthContext.Provider>
   )

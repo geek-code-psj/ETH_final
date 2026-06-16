@@ -11,10 +11,11 @@ from utils import log_audit
 
 router = APIRouter(tags=["Admin"])
 
+
 @router.get("/api/v1/audit-logs")
 def get_audit_logs(
     skip: int = 0, limit: int = 50,
-    db: Session = Depends(get_db), 
+    db: Session = Depends(get_db),
     current_admin=Depends(require_role([AdminRoleEnum.super_admin, AdminRoleEnum.admin]))
 ):
     from models.audit import AuditLog
@@ -22,27 +23,49 @@ def get_audit_logs(
     logs = db.query(AuditLog).order_by(AuditLog.created_at.desc()).offset(skip).limit(limit).all()
     return {"total": total, "logs": [AuditLogResponse.model_validate(l) for l in logs]}
 
+
 @router.get("/api/v1/admins", response_model=list[AdminResponse])
 def list_admins(
-    db: Session = Depends(get_db), 
+    db: Session = Depends(get_db),
     current_admin=Depends(require_role([AdminRoleEnum.super_admin, AdminRoleEnum.admin]))
 ):
     return auth_service.list_admins(db)
 
+
 @router.put("/api/v1/admins/{admin_id}/role", response_model=AdminResponse)
 def update_admin_role(
-    admin_id: int, 
-    payload: dict, 
-    db: Session = Depends(get_db), 
+    admin_id: int,
+    payload: dict,
+    db: Session = Depends(get_db),
     current_admin=Depends(require_role([AdminRoleEnum.super_admin]))
 ):
     role = payload.get("role")
     if role not in [r.value for r in AdminRoleEnum]:
         raise HTTPException(400, "Invalid role")
-        
+
     admin = auth_service.update_role(db, admin_id, role)
     if not admin:
         raise HTTPException(404, "Admin not found")
-        
+
     log_audit(db, current_admin, "UPDATE", "admin_role", admin_id, {"new_role": role})
+    return admin
+
+
+@router.post("/api/v1/admins/{admin_id}/approve", response_model=AdminResponse)
+def approve_admin(
+    admin_id: int,
+    payload: dict,
+    db: Session = Depends(get_db),
+    current_admin=Depends(require_role([AdminRoleEnum.super_admin]))
+):
+    """Approve a pending admin and set their role."""
+    new_role = payload.get("role", AdminRoleEnum.admin.value)
+    if new_role not in [r.value for r in AdminRoleEnum]:
+        raise HTTPException(400, "Invalid role")
+
+    admin = auth_service.approve_admin(db, admin_id, new_role)
+    if not admin:
+        raise HTTPException(404, "Admin not found")
+
+    log_audit(db, current_admin, "UPDATE", "admin_approve", admin_id, {"new_role": new_role})
     return admin

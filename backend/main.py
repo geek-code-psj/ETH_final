@@ -56,16 +56,13 @@ app = FastAPI(
 )
 
 # ─── CORS MUST BE THE FIRST MIDDLEWARE ADDED (STARLETTE READS LAST-IN, FIRST-OUT) ─
-_origins = [settings.FRONTEND_URL]
-if settings.ENVIRONMENT != "production":
-    _origins += ["http://localhost:5173", "http://localhost:3000", "https://eth-finnal-1.onrender.com", "https://eth-final-frontend.vercel.app"]
-
+# Security: Use explicit origins list, never wildcard with credentials
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Temporarily wildcarding to ensure no exact-match typos block origin
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["*"],
+    allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
 )
 
 app.state.limiter = limiter

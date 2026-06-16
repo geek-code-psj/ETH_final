@@ -1,8 +1,10 @@
 from sqlalchemy.orm import Session
 from typing import Optional, List
 from models.admin import AdminUser
+from models.enums import AdminRoleEnum
 from schemas.admin import AdminCreate
 from datetime import datetime
+
 
 class AuthService:
     @staticmethod
@@ -11,10 +13,14 @@ class AuthService:
 
     @staticmethod
     def create_admin(db: Session, obj_in: AdminCreate) -> AdminUser:
+        # Determine role - use provided role or default to admin
+        role = getattr(obj_in, 'role', None) or AdminRoleEnum.admin
+
         db_obj = AdminUser(
             firebase_uid=obj_in.firebase_uid,
             email=obj_in.email,
             name=obj_in.name,
+            role=role,
             last_login=datetime.now()
         )
         db.add(db_obj)
@@ -35,9 +41,28 @@ class AuthService:
     def update_role(db: Session, admin_id: int, role: str) -> Optional[AdminUser]:
         admin = db.query(AdminUser).filter(AdminUser.id == admin_id).first()
         if admin:
-            admin.role = role
+            try:
+                admin.role = AdminRoleEnum(role)
+            except ValueError:
+                admin.role = role  # Allow raw string if enum fails
             db.commit()
             db.refresh(admin)
         return admin
+
+    @staticmethod
+    def approve_admin(db: Session, admin_id: int, role: str) -> Optional[AdminUser]:
+        """Approve a pending admin and set their role."""
+        admin = db.query(AdminUser).filter(AdminUser.id == admin_id).first()
+        if not admin:
+            return None
+        try:
+            admin.role = AdminRoleEnum(role)
+        except ValueError:
+            admin.role = role
+        admin.is_active = True
+        db.commit()
+        db.refresh(admin)
+        return admin
+
 
 auth_service = AuthService()

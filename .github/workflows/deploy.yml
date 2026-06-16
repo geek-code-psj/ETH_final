@@ -58,8 +58,9 @@ jobs:
           python -c "
           import os
           os.environ.setdefault('DATABASE_URL', 'postgresql://hrms_test:testpass@localhost/hrms_test')
-          from database import engine
-          from models import Base
+          from core.database import engine
+          from core.database import Base
+          from models import admin, employee, attendance, leave, payroll, department, document, notification, leave_types, settings, audit, employee_auth
           Base.metadata.create_all(bind=engine)
           print('✓ Database tables created successfully')
           "

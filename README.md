@@ -1,289 +1,410 @@
 # HRMS — Human Resource Management System
 
-A lightweight, production-ready HRMS built with **FastAPI + React + PostgreSQL + Firebase Auth**, deployed on Render.
+<p align="center">
+  <img src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi" alt="FastAPI">
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React">
+  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=FFA000" alt="Firebase">
+</p>
+
+<p align="center">
+  <a href="https://eth-finnal-1.onrender.com">
+    <img src="https://img.shields.io/badge/Live%20Demo-Click%20Here-4CAF50?style=for-the-badge" alt="Live Demo">
+  </a>
+  <a href="https://eth-finnal-1.onrender.com/docs">
+    <img src="https://img.shields.io/badge/API%20Docs-Open%20Here-2196F3?style=for-the-badge" alt="API Docs">
+  </a>
+</p>
 
 ---
 
-## ✨ Features
+## Live Deployment
 
-| Feature | Details |
-|---|---|
-| **Employee Management** | Add, edit, delete employees — name, email, department, position, salary, hire date, status |
-| **Attendance Tracking** | Individual log or bulk-mark all employees; check-in/out times, hours auto-calculated |
-| **Dashboard Analytics** | Live headcount stats, department bar chart, today's attendance pie chart |
-| **Firebase Auth** | Google OAuth sign-in; admin-only access enforced on every API route |
-| **Pagination & Filters** | Search, filter by department/status/date range on all tables |
+| Service | URL | Status |
+|---------|-----|--------|
+| **Frontend (Main)** | https://eth-finnal-1.onrender.com | Production |
+| **Backend API** | https://eth-finnal-1.onrender.com | Production |
+| **API Docs** | https://eth-finnal-1.onrender.com/docs | Interactive |
 
 ---
 
-## 🖥 Screens & UI
+## Features
 
-| Screen | Features |
-|--------|---------|
-| **Login** | Google OAuth, split-panel layout |
-| **Dashboard** | 8 stat cards, Recharts bar + pie charts, recent hires table |
-| **Employees** | Searchable/filterable table, add/edit/delete modals, paginated |
-| **Attendance** | Date-range filtered table, single log modal, bulk-mark all employees modal |
+### Employee Management
+- Full CRUD operations (Create, Read, Update, Delete)
+- Department assignment with 9 departments
+- Position and salary tracking
+- Document upload system
+- Employee search and filtering
+- Status management (Active/Inactive/On Leave)
 
-### UI State Coverage
-Every screen handles all three states:
-- **Loading** — spinner shown while API request is in flight
-- **Empty** — icon + message when no data exists
-- **Error** — toast notification on any API failure
-- Form modals show inline field-level validation and a saving spinner on submit
+### Attendance Tracking
+- **Daily logging** — Manual check-in/check-out entry
+- **Bulk operations** — Mark all employees at once
+- **CSV Export** — Download attendance data
+- **Monthly summaries** — Statistics and reports
+- **Real-time today view** — Live attendance dashboard
+- Automatic late calculation
+
+### Leave Management
+- Leave request submission
+- Approval/rejection workflow
+- Leave type configuration
+- Balance tracking per employee
+- Overlap validation
+
+### Payroll
+- Monthly payroll generation
+- Automatic working days calculation (22 days)
+- Payslip viewing
+- Salary structure management
+
+### Security & Access Control
+- **Firebase Google OAuth** — Secure admin authentication
+- **JWT Portal Auth** — Employee self-service login
+- **Role-Based Access** — 4 roles: Super Admin, Admin, HR Manager, Viewer
+- **Admin approval workflow** — New admins require approval
+- Rate limiting on login endpoints
+- Audit logging for all actions
 
 ---
 
-## 🗂 Project Structure
+## Technology Stack
+
+| Category | Technology |
+|----------|------------|
+| **Backend** | FastAPI 0.115, SQLAlchemy 2.0, Pydantic 2.9 |
+| **Frontend** | React 18, Vite 5, Tailwind CSS 3 |
+| **Authentication** | Firebase Auth (Google OAuth) + JWT |
+| **Database** | PostgreSQL 15 |
+| **Deployment** | Render (Backend + DB), Vercel (Frontend) |
+
+---
+
+## Architecture
 
 ```
-hrms-project/
+┌────────────────────────────────────────────────────────────────┐
+│                      FRONTEND (React + Vite)                  │
+│  ┌──────────┐  ┌───────────┐  ┌────────────┐  ┌─────────────┐  │
+│  │ Firebase │  │   Axios   │  │  React     │  │  Tailwind  │  │
+│  │   Auth   │  │Interceptor│  │   Router   │  │    CSS     │  │
+│  └──────────┘  └───────────┘  └────────────┘  └─────────────┘  │
+└────────────────────────────┬───────────────────────────────────┘
+                             │ Bearer Token / JWT
+                             ▼
+┌────────────────────────────────────────────────────────────────┐
+│                      BACKEND (FastAPI)                         │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │         Routers → Services → Models → SQLAlchemy         │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│  ┌──────────┐  ┌──────────┐  ┌───────────┐  ┌──────────────┐   │
+│  │ Firebase │  │   JWT    │  │  Rate     │  │    Audit     │   │
+│  │   Auth   │  │  Portal  │  │  Limiter  │  │   Logging   │   │
+│  └──────────┘  └──────────┘  └───────────┘  └──────────────┘   │
+└────────────────────────────┬───────────────────────────────────┘
+                             │
+                             ▼
+┌────────────────────────────────────────────────────────────────┐
+│                    POSTGRES DATABASE                            │
+│  ┌──────────┐  ┌───────────┐  ┌────────┐  ┌────────┐  ┌───────┐ │
+│  │Employees │  │Attendance │  │ Leave │  │Payroll│  │ Admin │ │
+│  └──────────┘  └───────────┘  └────────┘  └────────┘  └───────┘ │
+└────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Security Features
+
+| Feature | Description |
+|---------|-------------|
+| **Firebase Authentication** | Google OAuth sign-in for admins |
+| **JWT Tokens** | Secure token-based auth for employee portal |
+| **Role-Based Access** | 4-tier role system with granular permissions |
+| **Rate Limiting** | 5 requests/minute on portal login |
+| **Input Validation** | Pydantic schemas with strong typing |
+| **SQL Injection Protection** | SQLAlchemy ORM prevents SQL injection |
+| **CORS Protection** | Explicit origin allowlist (not wildcard) |
+| **Security Headers** | X-Frame-Options, HSTS, X-Content-Type-Options |
+| **File Upload Validation** | Size limits (10MB), MIME type checking |
+| **Audit Logging** | All admin actions tracked with timestamps |
+| **Error Sanitization** | Internal errors never exposed to clients |
+
+---
+
+## API Endpoints
+
+### Authentication
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| POST | `/api/v1/auth/register` | Register admin via Firebase | Firebase Token |
+| GET | `/api/v1/auth/me` | Get current admin | Firebase Token |
+| POST | `/api/v1/auth/register/approve/{id}` | Approve pending admin | Super Admin |
+
+### Employees
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/api/v1/employees` | List employees (paginated) | Firebase Token |
+| POST | `/api/v1/employees` | Create employee | Admin/HR |
+| GET | `/api/v1/employees/{id}` | Get employee details | Firebase Token |
+| PUT | `/api/v1/employees/{id}` | Update employee | Admin/HR |
+| DELETE | `/api/v1/employees/{id}` | Delete employee | Admin Only |
+
+### Attendance
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/api/v1/attendance` | List attendance | Firebase Token |
+| POST | `/api/v1/attendance` | Create record | Admin/HR |
+| GET | `/api/v1/attendance/today` | Today's attendance | Firebase Token |
+| POST | `/api/v1/attendance/bulk` | Bulk create | Admin/HR |
+| GET | `/api/v1/attendance/export` | Export to CSV | Firebase Token |
+| GET | `/api/v1/attendance/monthly-summary` | Monthly stats | Firebase Token |
+
+### Leave
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/api/v1/leave` | List requests | Firebase Token |
+| POST | `/api/v1/leave` | Submit request | Employee |
+| PUT | `/api/v1/leave/{id}` | Approve/reject | Admin/HR |
+
+### Payroll
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/api/v1/payroll` | List records | Admin |
+| POST | `/api/v1/payroll/generate` | Generate monthly | Admin/HR |
+| GET | `/api/v1/payroll/{id}/payslip` | View payslip | Admin |
+
+### Employee Portal
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| POST | `/api/v1/portal/login` | Employee login | None |
+| POST | `/api/v1/portal/refresh` | Refresh token | JWT |
+| GET | `/api/v1/portal/me` | My profile | JWT |
+| PUT | `/api/v1/portal/me` | Update profile | JWT |
+| PUT | `/api/v1/portal/change-password` | Change password | JWT |
+| GET | `/api/v1/portal/attendance` | My attendance | JWT |
+| GET | `/api/v1/portal/leave` | My leave requests | JWT |
+| POST | `/api/v1/portal/leave` | Submit leave | JWT |
+
+---
+
+## Role Permissions
+
+| Feature | Super Admin | Admin | HR Manager | Viewer |
+|---------|:----------:|:-----:|:----------:|:------:|
+| Manage admins | ✅ | ❌ | ❌ | ❌ |
+| Approve admins | ✅ | ❌ | ❌ | ❌ |
+| Delete employees | ✅ | ✅ | ❌ | ❌ |
+| Create employees | ✅ | ✅ | ✅ | ❌ |
+| View all data | ✅ | ✅ | ✅ | ✅ |
+| Manage attendance | ✅ | ✅ | ✅ | ❌ |
+| Approve leave | ✅ | ✅ | ✅ | ❌ |
+| Generate payroll | ✅ | ✅ | ✅ | ❌ |
+| View audit logs | ✅ | ✅ | ❌ | ❌ |
+| Delete attendance | ✅ | ❌ | ❌ | ❌ |
+
+---
+
+## Project Structure
+
+```
+HRMS/
 ├── backend/
-│   ├── main.py          # All FastAPI routes (15 endpoints)
-│   ├── models.py        # SQLAlchemy ORM models
-│   ├── schemas.py       # Pydantic request/response schemas
-│   ├── database.py      # PostgreSQL connection (handles Render postgres:// prefix)
-│   ├── auth.py          # Firebase token verification middleware
-│   ├── .env.example     # All required environment variables documented
-│   └── requirements.txt
+│   ├── main.py                  # FastAPI application entry point
+│   ├── core/
+│   │   ├── config.py           # Configuration & environment validation
+│   │   ├── security.py         # Firebase authentication & role checking
+│   │   ├── employee_auth.py    # JWT token generation & validation
+│   │   ├── database.py         # SQLAlchemy database setup
+│   │   ├── email.py            # Email service (SMTP/SendGrid)
+│   │   └── logger.py           # Structured logging
+│   ├── routers/
+│   │   ├── auth.py             # Admin authentication
+│   │   ├── employees.py        # Employee CRUD operations
+│   │   ├── attendance.py       # Attendance tracking
+│   │   ├── leave.py            # Leave management
+│   │   ├── leave_types.py     # Leave type configuration
+│   │   ├── payroll.py          # Payroll generation
+│   │   ├── portal.py          # Employee self-service portal
+│   │   ├── admin.py           # Admin management
+│   │   ├── departments.py     # Department CRUD
+│   │   ├── documents.py       # Document upload
+│   │   ├── analytics.py       # Analytics & trends
+│   │   ├── notifications.py   # Notification system
+│   │   ├── dashboard.py       # Dashboard statistics
+│   │   └── settings.py        # System settings
+│   ├── services/               # Business logic layer
+│   ├── models/                 # SQLAlchemy ORM models
+│   ├── schemas/                # Pydantic request/response schemas
+│   └── requirements.txt        # Python dependencies
 ├── frontend/
 │   ├── src/
-│   │   ├── pages/
-│   │   │   ├── LoginPage.jsx
-│   │   │   ├── DashboardPage.jsx
-│   │   │   ├── EmployeesPage.jsx
-│   │   │   └── AttendancePage.jsx
-│   │   ├── components/
-│   │   │   ├── Layout.jsx               # Sidebar + topbar shell
-│   │   │   ├── EmployeeModal.jsx        # Add/edit employee form
-│   │   │   ├── AttendanceModal.jsx      # Log/edit single attendance
-│   │   │   └── BulkAttendanceModal.jsx  # Mark all employees at once
-│   │   ├── contexts/AuthContext.jsx     # Firebase auth state + admin registration
-│   │   ├── api.js        # Axios client — auto-injects Firebase ID token
-│   │   ├── firebase.js   # Firebase app init
-│   │   └── App.jsx       # Router + protected routes
-│   ├── .env.example
-│   ├── tailwind.config.js
+│   │   ├── pages/              # Page components
+│   │   ├── components/         # Reusable UI components
+│   │   ├── contexts/          # React contexts
+│   │   ├── api.js             # Axios API client
+│   │   └── firebase.js        # Firebase initialization
+│   ├── package.json
 │   └── vite.config.js
-└── render.yaml
+├── docker-compose.yml
+├── .env.example
+└── README.md
 ```
 
 ---
 
-## 🔧 Assumptions
-
-- **Single admin role** — any Google account that signs in is registered as admin. To restrict access, add an email allowlist check in `backend/auth.py` → `get_current_admin`.
-- **PostgreSQL only** — no SQLite fallback. A running Postgres instance is required locally and on Render.
-- **Firebase Google Auth only** — email/password login is not implemented. Can be added via Firebase console + a small frontend change.
-- **No file uploads** — avatar URLs are stored as plain strings; image upload (e.g. Firebase Storage) is not included.
-- **Salary stored as decimal** — displayed in INR (₹). Currency symbol can be changed in `EmployeesPage.jsx`.
-- **Attendance uniqueness** — one record per employee per date enforced at DB + API level. Bulk mark upserts (updates if exists, creates if not).
-- **Hours worked** — auto-calculated from check-in and check-out. If either is missing, hours_worked is null.
-- **Tables auto-created** — SQLAlchemy runs `create_all` on startup. No manual migration needed for a fresh deploy.
-
----
-
-## 🚀 Local Development
+## Local Development
 
 ### Prerequisites
 - Python 3.11+
 - Node.js 18+
-- PostgreSQL running locally
+- PostgreSQL 15+
 - Firebase project with Google Auth enabled
 
-### Backend
+### Quick Start
 
 ```bash
+# Clone the repository
+git clone https://github.com/your-repo/hrms.git
+cd hrms
+
+# Backend setup
 cd backend
-
 python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
-
+.\venv\Scripts\activate  # Windows
+# source venv/bin/activate  # Linux/Mac
 pip install -r requirements.txt
-
-cp .env.example .env
-# Edit .env — set DATABASE_URL and Firebase credentials
-
+copy .env.example .env
 uvicorn main:app --reload --port 8000
-```
 
-Tables are auto-created on first run. API docs at `http://localhost:8000/docs`
-
-**Dev mode (skip Firebase auth locally):**
-Set `DEV_MODE=true` in your `.env`. The first admin in the DB is used automatically — no token needed.
-
-### Frontend
-
-```bash
+# Frontend setup (new terminal)
 cd frontend
-
 npm install
-
-cp .env.example .env
-# Edit .env — set VITE_API_URL=http://localhost:8000 and Firebase web config
-
+copy .env.example .env
 npm run dev
 ```
 
-App at `http://localhost:5173`
+---
+
+## Environment Variables
+
+### Backend (.env)
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | Yes | Firebase service account JSON |
+| `FIREBASE_PROJECT_ID` | Yes | Firebase project ID |
+| `EMPLOYEE_JWT_SECRET` | Yes | JWT secret for employee portal |
+| `ADMIN_JWT_SECRET` | Yes | JWT secret for admin portal |
+| `FRONTEND_URL` | Yes | Frontend URL for CORS |
+| `ENVIRONMENT` | No | development/production |
+| `DEV_MODE` | No | Enable dev mode (dev only!) |
+| `ALLOW_ADMIN_SELF_REGISTRATION` | No | Allow self-reg (dev only!) |
+
+### Frontend (.env)
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `VITE_API_URL` | Yes | Backend API URL |
+| `VITE_FIREBASE_API_KEY` | Yes | Firebase API key |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Yes | Firebase auth domain |
+| `VITE_FIREBASE_PROJECT_ID` | Yes | Firebase project ID |
+| `VITE_FIREBASE_STORAGE_BUCKET` | Yes | Firebase storage bucket |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Yes | Firebase sender ID |
+| `VITE_FIREBASE_APP_ID` | Yes | Firebase app ID |
 
 ---
 
-## 🔥 Firebase Setup
+## Deployment
 
-### 1. Create project
-[console.firebase.google.com](https://console.firebase.google.com) → Add project → disable Analytics → Create
+### Production Deployment
 
-### 2. Enable Google Auth
-Authentication → Sign-in method → Google → Enable → Save
+#### Backend (Render)
+1. Create PostgreSQL database on Render
+2. Create Web Service with:
+   - Build: `pip install -r requirements.txt`
+   - Start: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+3. Set environment variables
 
-### 3. Frontend config
-Project Settings → Your apps → Add web app → copy the config object values to `frontend/.env`
-
-### 4. Backend service account
-Project Settings → Service accounts → Generate new private key → a `.json` file downloads.
-Copy the **entire file contents** as the value of `FIREBASE_SERVICE_ACCOUNT_JSON`.
-
-### 5. Authorized domains (after deploy)
-Authentication → Settings → Authorized domains → Add domain → paste your Render frontend domain:
-`hrms-frontend-xxxx.onrender.com`
-
----
-
-## ☁️ Deploy to Render (Manual)
-
-Deploy in this exact order: **Database → Backend → Frontend**
-
-### Step 1 — PostgreSQL
-- New → **PostgreSQL**
-- Name: `hrms-db`, Plan: Free
-- After creation, copy the **Internal Database URL**
-
-### Step 2 — Backend
-- New → **Web Service** → connect GitHub repo
-- Root Directory: `backend`
-- Build Command: `pip install -r requirements.txt`
-- Start Command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-- Plan: Free
-
-**Environment variables — add all before first deploy:**
-
-| Key | Value |
-|-----|-------|
-| `PYTHON_VERSION` | `3.11.9` |
-| `DATABASE_URL` | Internal Database URL from Step 1 |
-| `FIREBASE_SERVICE_ACCOUNT_JSON` | Entire contents of service account `.json` file |
-| `FRONTEND_URL` | Use `http://localhost:5173` for now — update after Step 3 |
-| `DEV_MODE` | `false` |
-
-> ⚠️ `PYTHON_VERSION=3.11.9` is mandatory. Render defaults to Python 3.14 which breaks pydantic-core compilation.
-
-### Step 3 — Frontend
-- New → **Static Site** → connect same repo
-- Root Directory: `frontend`
-- Build Command: `npm install && npm run build`
-- Publish Directory: `dist`
-- Add rewrite rule: Source `/*` → Destination `/index.html`
-
-> The rewrite rule is critical — without it, refreshing any page gives a 404.
-
-**Environment variables:**
-
-| Key | Value |
-|-----|-------|
-| `VITE_API_URL` | Backend URL from Step 2 e.g. `https://hrms-backend-xxxx.onrender.com` |
-| `VITE_FIREBASE_API_KEY` | From Firebase console |
-| `VITE_FIREBASE_AUTH_DOMAIN` | From Firebase console |
-| `VITE_FIREBASE_PROJECT_ID` | From Firebase console |
-| `VITE_FIREBASE_STORAGE_BUCKET` | From Firebase console |
-| `VITE_FIREBASE_MESSAGING_SENDER_ID` | From Firebase console |
-| `VITE_FIREBASE_APP_ID` | From Firebase console |
-
-### Step 4 — Cross-link services
-- Copy frontend URL → go to **hrms-backend → Environment** → update `FRONTEND_URL` → Save
-- Backend redeploys automatically
-
-### Step 5 — Firebase authorized domain
-Add your frontend `.onrender.com` domain to Firebase → Authentication → Authorized domains.
+#### Frontend (Vercel/Render)
+1. Connect GitHub repository
+2. Configure build:
+   - Build: `npm run build`
+   - Output: `dist`
+3. Set environment variables
+4. Add rewrite rule: `/*` → `/index.html`
 
 ---
 
-## 📡 API Reference
+## Database Schema
 
-All endpoints except `/health` and `/api/auth/register` require:
-```
-Authorization: Bearer <firebase-id-token>
-```
+### admin_users
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | Integer | Primary key |
+| `firebase_uid` | String | Firebase UID (unique) |
+| `email` | String | Email (unique) |
+| `name` | String | Display name |
+| `role` | Enum | super_admin, admin, hr_manager, viewer |
+| `is_active` | Boolean | Account active status |
+| `last_login` | DateTime | Last login timestamp |
+| `created_at` | DateTime | Creation timestamp |
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/health` | Health check |
-| POST | `/api/auth/register` | Register admin after Firebase sign-in |
-| GET | `/api/auth/me` | Current admin info |
-| GET | `/api/dashboard` | Aggregated stats for dashboard |
-| GET | `/api/employees` | List — supports `search`, `department`, `status`, `skip`, `limit` |
-| POST | `/api/employees` | Create employee |
-| GET | `/api/employees/{id}` | Get single employee |
-| PUT | `/api/employees/{id}` | Update employee |
-| DELETE | `/api/employees/{id}` | Delete employee + cascade attendance |
-| GET | `/api/attendance` | List — filter by `employee_id`, `date_from`, `date_to`, `status` |
-| GET | `/api/attendance/today` | Today's full attendance snapshot |
-| POST | `/api/attendance` | Log single attendance record |
-| PUT | `/api/attendance/{id}` | Update attendance record |
-| DELETE | `/api/attendance/{id}` | Delete attendance record |
-| POST | `/api/attendance/bulk` | Bulk upsert attendance for multiple employees |
+### employees
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | Integer | Primary key |
+| `employee_id` | String | Unique ID (EMP0001) |
+| `first_name` | String | First name |
+| `last_name` | String | Last name |
+| `email` | String | Email (unique) |
+| `phone` | String | Phone number |
+| `department` | Enum | Department (Engineering, HR, etc.) |
+| `position` | String | Job position |
+| `salary` | Decimal | Salary amount |
+| `hire_date` | Date | Hire date |
+| `status` | Enum | Active, Inactive, On Leave |
 
----
-
-## 🗄 Database Schema
-
-```
-employees
-  id (PK), employee_id (EMP0001, unique), first_name, last_name
-  email (unique), phone, department (enum), position
-  salary (decimal), hire_date, date_of_birth, address
-  status (Active / Inactive / On Leave)
-  manager_id (self-FK nullable), created_at, updated_at
-
-attendance
-  id (PK), employee_id (FK → employees, cascade delete)
-  date, check_in (datetime), check_out (datetime)
-  status (Present / Absent / Late / Half Day / On Leave)
-  hours_worked (auto-calculated), notes, created_at, updated_at
-  UNIQUE (employee_id, date)
-
-admin_users
-  id (PK), firebase_uid (unique), email (unique)
-  name, role, is_active, created_at
-```
+### attendance
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | Integer | Primary key |
+| `employee_id` | Integer | FK to employees |
+| `date` | Date | Attendance date |
+| `check_in` | DateTime | Check-in time |
+| `check_out` | DateTime | Check-out time |
+| `status` | Enum | Present, Absent, Late, Half Day |
+| `hours_worked` | Decimal | Calculated hours |
+| `is_late` | Boolean | Late flag |
+| `late_minutes` | Integer | Minutes late |
 
 ---
 
-## 🛠 Tech Stack
+## Screenshots
 
-| Layer | Technology |
-|-------|-----------|
-| Backend | FastAPI 0.115, SQLAlchemy 2.0, Pydantic 2.9, psycopg2-binary |
-| Frontend | React 18, Vite 5, Tailwind CSS 3, Recharts, React Router 6 |
-| Auth | Firebase Authentication (Google OAuth) + firebase-admin SDK |
-| Database | PostgreSQL (Render managed or Neon.tech for permanent free tier) |
-| Deployment | Render — Web Service (backend) + Static Site (frontend) + PostgreSQL |
-
----
-
-## 💡 Free Tier Notes
-
-| Service | Limit | Note |
-|---------|-------|------|
-| Render Web Service | Free, spins down after 15min idle | ~30s cold start on first hit |
-| Render Static Site | Free, always on | Frontend always instant |
-| Render PostgreSQL | Free for 90 days | Switch to Neon.tech for permanent free |
-| Firebase Auth | Free (Spark plan) | No practical limits for HRMS scale |
-
-**Keep backend warm:** Use [UptimeRobot](https://uptimerobot.com) (free) to ping `/health` every 5 minutes.
+The application includes:
+- **Login Page** — Google OAuth sign-in
+- **Dashboard** — Stats cards, charts, recent activity
+- **Employees** — Searchable table with CRUD modals
+- **Attendance** — Date filters, bulk operations, export
+- **Leave** — Request submission, approval workflow
+- **Payroll** — Monthly generation, payslip view
+- **Employee Portal** — Self-service profile & attendance
 
 ---
 
-## 📄 License
+## License
 
-MIT
+MIT License — Feel free to use this for your own projects!
+
+---
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request.
+
+---
+
+## Support
+
+For issues and questions, please open a GitHub issue.

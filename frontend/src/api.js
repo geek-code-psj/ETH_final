@@ -98,6 +98,7 @@ export const authApi = {
 export const adminApi = {
   list: () => api.get(`${BASE}/admins`),
   updateRole: (id, role) => api.put(`${BASE}/admins/${id}/role`, { role }),
+  approve: (id, role) => api.post(`${BASE}/admins/${id}/approve`, { role }),
 }
 
 export const payrollApi = {

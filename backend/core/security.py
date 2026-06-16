@@ -40,25 +40,38 @@ def verify_firebase_token(credentials: HTTPAuthorizationCredentials = Security(s
         decoded_token = auth.verify_id_token(token)
         return decoded_token
     except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Invalid authentication token: {str(e)}")
+        raise HTTPException(status_code=401, detail="Invalid authentication token")
 
 def get_current_user(
     token_data: dict = Depends(verify_firebase_token),
     db: Session = Depends(get_db)
 ) -> AdminUser:
+    # DEV_MODE should NEVER be used in production - it's a security bypass
     if settings.DEV_MODE:
+        import warnings
+        warnings.warn("DEV_MODE is enabled - authentication bypassed! Do not use in production.")
         admin = db.query(AdminUser).first()
-        if admin: return admin
-    
+        if admin:
+            return admin
+        # If no admin exists, create a warning but don't auto-create
+
     uid = token_data.get("uid")
+    if not uid:
+        raise HTTPException(status_code=401, detail="Invalid token: missing uid claim")
+
+    email = token_data.get("email", "").lower()
     admin = db.query(AdminUser).filter(
         AdminUser.firebase_uid == uid,
         AdminUser.is_active == True
     ).first()
-    
+
     if not admin:
         raise HTTPException(status_code=403, detail="Access denied. Admin account not found or inactive.")
-    
+
+    # Security: Verify token email matches admin email (prevents token reuse across admins)
+    if email and admin.email.lower() != email:
+        raise HTTPException(status_code=403, detail="Token email mismatch with admin account")
+
     return admin
 
 def require_role(roles: list[AdminRoleEnum]):

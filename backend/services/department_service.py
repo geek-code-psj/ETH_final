@@ -3,7 +3,9 @@ from sqlalchemy import func
 from typing import List, Optional
 from models.department import Department
 from models.employee import Employee
+from models.enums import DepartmentEnum
 from schemas.department import DepartmentCreate
+
 
 class DepartmentService:
     @staticmethod
@@ -11,7 +13,20 @@ class DepartmentService:
         depts = db.query(Department).all()
         result = []
         for d in depts:
-            count = db.query(func.count(Employee.id)).filter(Employee.department == d.name).scalar()
+            # Fix: Match DepartmentEnum value to Department.name
+            # Employee.department is DepartmentEnum, Department.name is string
+            try:
+                dept_enum = DepartmentEnum(d.name.lower())
+            except ValueError:
+                dept_enum = None
+
+            if dept_enum:
+                count = db.query(func.count(Employee.id)).filter(
+                    Employee.department == dept_enum
+                ).scalar()
+            else:
+                count = 0
+
             result.append({
                 "id": d.id,
                 "name": d.name,
